@@ -14,3 +14,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     pass
+
+
+class CategorySerializer123(serializers.ModelSerializer):
+    pass
