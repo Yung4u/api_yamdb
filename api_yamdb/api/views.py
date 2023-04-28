@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, AdminSerializer
 from .permissions import IsAdminUser
 
 
@@ -16,17 +16,17 @@ class UserViewSet(viewsets.ViewSet):
 
     def list(self, request):
         queryset = User.objects.all()
-        serializer = UserSerializer(queryset, many=True)
+        serializer = AdminSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, username=None):
         queryset = User.objects.all()
         user = get_object_or_404(queryset, username=username)
-        serializer = UserSerializer(user)
+        serializer = AdminSerializer(user)
         return Response(serializer.data)
 
     def create(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = AdminSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -35,7 +35,7 @@ class UserViewSet(viewsets.ViewSet):
     def update(self, request, username=None):
         queryset = User.objects.all()
         user = get_object_or_404(queryset, username=username)
-        serializer = UserSerializer(user, data=request.data)
+        serializer = AdminSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -48,13 +48,23 @@ class UserViewSet(viewsets.ViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['patch'])
-    def me(self, request):
-        user = request.user
+    def patch_me(self, request):
+        user = get_object_or_404(
+            User,
+            username=request.data.get('username'))
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors)
+
+    @action(detail=True, methods=['patch'])
+    def get_me(self, request):
+        user = get_object_or_404(
+            User,
+            username=request.user.username)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'create', 'update', 'destroy']:

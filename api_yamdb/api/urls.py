@@ -4,7 +4,10 @@ from . import views
 
 urlpatterns = [
     path('api/v1/users', views.UserViewSet.as_view({'get': 'list',
-                                                    'post': 'create'})),
+                                                    'post': 'create',
+                                                    'patch': 'me'})),
+    path('api/v1/users/me', views.UserViewSet.as_view({'get': 'get_me',
+                                                       'patch': 'patch_me'})),
     path('api/v1/users/<str:username>', views.UserViewSet.as_view(
         {'get': 'retrieve',
          'patch': 'update',
