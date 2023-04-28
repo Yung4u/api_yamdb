@@ -47,7 +47,7 @@ class UserViewSet(viewsets.ViewSet):
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['patch'])
     def me(self, request):
         user = request.user
         serializer = UserSerializer(user, data=request.data)
