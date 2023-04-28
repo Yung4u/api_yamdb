@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -8,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import User
 from .serializers import UserSerializer
+from .permissions import IsAdminUser
 
 
 class UserViewSet(viewsets.ViewSet):
@@ -53,6 +55,13 @@ class UserViewSet(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors)
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'create', 'update', 'destroy']:
+            permission_classes = [IsAdminUser]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
 
 class SignupViewSet(viewsets.ViewSet):
