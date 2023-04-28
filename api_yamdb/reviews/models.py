@@ -6,7 +6,7 @@ User = get_user_model()
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=50)
     slug = models.SlugField(
         max_length=50,
         unique=True,
@@ -14,15 +14,15 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=50)
     slug = models.SlugField(
-        max_length=50,
+        max_length=25,
         unique=True,
     )
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=100)
     year = models.IntegerField()
     description = models.TextField(
         max_length=256,

@@ -1,20 +1,40 @@
 from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueTogetherValidator
 from reviews.models import Title, Genre, Category
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    pass
-
-
 class GenreSerializer(serializers.ModelSerializer):
-    pass
+
+    class Meta:
+        fields = '__all__'
+        read_only_fields = 'slug'
+        model = Genre
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    pass
+
+    class Meta:
+        fields = '__all__'
+        read_only_fields = 'slug'
+        model = Category
 
 
-class CategorySerializer123(serializers.ModelSerializer):
-    pass
+class TitleGetSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
+
+    class Meta:
+        fields = '__all__'
+        model = Title
+
+
+class TitlePostSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        slug_field='slug', many=True, queryset=Genre.objects.all()
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug', queryset=Category.objects.all()
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Title

@@ -1,24 +1,33 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import filters, mixins, viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import filters, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
 from reviews.models import Title, Genre, Category
-from .serializers import (TitleSerializer, GenreSerializer,
-                          CategorySerializer)
-
-
-class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
-    serializer_class = TitleSerializer
-    permission_classes = (IsAuthenticated)
+from .permissions import IsAuthorOrReadOnly
+from .serializers import (TitleGetSerializer, TitlePostSerializer, 
+                          GenreSerializer, CategorySerializer)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAuthenticated)
+    permission_classes = [IsAuthorOrReadOnly]
+    filter_backends = (filters.SearchFilter)
+    search_fields = ('name',)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAuthenticated)
+    permission_classes = [IsAuthorOrReadOnly]
+    filter_backends = (filters.SearchFilter)
+    search_fields = ('name',)
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    permission_classes = [IsAuthorOrReadOnly]
+    filter_backends = (DjangoFilterBackend)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleGetSerializer
+        return TitlePostSerializer
