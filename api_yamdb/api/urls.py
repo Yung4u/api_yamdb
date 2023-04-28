@@ -1,5 +1,4 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView
 
 from . import views
 
@@ -10,6 +9,8 @@ urlpatterns = [
         {'get': 'retrieve',
          'patch': 'update',
          'del': 'destroy'})),
-    path('api/v1/auth/signup', views.SignupViewSet.as_view({'post': 'create'})),
-    path('api/v1/auth/token', views.TokenViewSet.as_view({'post': 'create'})),
+    path('api/v1/auth/signup',
+         views.SignupViewSet.as_view({'post': 'create'})),
+    path('api/v1/auth/token',
+         views.TokenViewSet.as_view({'post': 'create'})),
 ]
