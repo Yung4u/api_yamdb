@@ -10,5 +10,6 @@ urlpatterns = [
         {'get': 'retrieve',
          'patch': 'update',
          'del': 'destroy'})),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/v1/auth/signup', views.SignupViewSet.as_view({'post': 'create'})),
+    path('api/v1/auth/token', views.TokenViewSet.as_view({'post': 'create'})),
 ]
