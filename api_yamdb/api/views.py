@@ -12,7 +12,7 @@ from reviews.models import Title, Genre, Category, User, Review
 from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAdminUser,
                           IsAdminModeratorOrAuthor)
-from .serializers import (TitleGetSerializer, TitlePostSerializer, 
+from .serializers import (TitleGetSerializer, TitlePostSerializer,
                           GenreSerializer, CategorySerializer,
                           UserSerializer, AdminSerializer,
                           ReviewSerializer, CommentSerializer)

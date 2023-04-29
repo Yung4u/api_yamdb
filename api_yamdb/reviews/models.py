@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
+from django.db.models import UniqueConstraint
 
 
 USER_ROLES = (
@@ -46,7 +47,7 @@ class Title(models.Model):
                                    related_name='genre',
                                    verbose_name='Жанр')
     category = models.ForeignKey(
-        Category,
+        Category, null=True,
         on_delete=models.SET_NULL,
         related_name='categories',
         verbose_name='Категория',
@@ -66,6 +67,14 @@ class Review(models.Model):
                                 MaxValueValidator(10)])
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ("-pub_date",)
+        constraints = [
+            UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique_review')
+        ]
 
     def __str__(self):
         return self.text
