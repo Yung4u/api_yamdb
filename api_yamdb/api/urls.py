@@ -22,12 +22,12 @@ router_v1.register(
 
 
 urlpatterns = [
-    path('v1/users', UserViewSet.as_view({'get': 'list',
+    path('v1/users/', UserViewSet.as_view({'get': 'list',
                                           'post': 'create',
                                           'patch': 'me'})),
-    path('v1/users/me', UserViewSet.as_view({'get': 'get_me',
+    path('v1/users/me/', UserViewSet.as_view({'get': 'get_me',
                                              'patch': 'patch_me'})),
-    path('v1/users/<str:username>', UserViewSet.as_view(
+    path('v1/users/<str:username>/', UserViewSet.as_view(
         {'get': 'retrieve',
          'patch': 'update',
          'del': 'destroy'})),

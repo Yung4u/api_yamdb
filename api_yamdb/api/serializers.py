@@ -33,7 +33,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = '__all__'
-        read_only_fields = 'slug'
+        read_only_fields = ('slug',)
         model = Genre
 
 
@@ -41,7 +41,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = '__all__'
-        read_only_fields = 'slug'
+        read_only_fields = ('slug',)
         model = Category
 
 

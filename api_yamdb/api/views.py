@@ -8,14 +8,14 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from reviews.models import Title, Genre, Category, User
+from reviews.models import Title, Genre, Category, User, Review
 from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAdminUser,
                           IsAdminModeratorOrAuthor)
 from .serializers import (TitleGetSerializer, TitlePostSerializer, 
                           GenreSerializer, CategorySerializer,
                           UserSerializer, AdminSerializer,
-                          ReviewSerializer)
+                          ReviewSerializer, CommentSerializer)
 
 
 class UserViewSet(viewsets.ViewSet):
@@ -98,7 +98,7 @@ class SignupViewSet(viewsets.ViewSet):
             )
 
             return Response(serializer.data)
-        return Response(serializer.errors)
+        return Response(serializer.errors, status=400)
 
 
 class GenreViewSet(mixins.CreateModelMixin,
@@ -109,7 +109,7 @@ class GenreViewSet(mixins.CreateModelMixin,
     serializer_class = GenreSerializer
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (filters.SearchFilter)
-    read_fields = 'slug'
+    lookup_fields = 'slug'
     search_fields = ('name',)
 
 
@@ -121,7 +121,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (filters.SearchFilter)
-    read_fields = 'slug'
+    lookup_fields = 'slug'
     search_fields = ('name',)
 
 
