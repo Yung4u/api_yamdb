@@ -3,8 +3,31 @@ from reviews.models import (Category,
                             Comment,
                             Genre,
                             Title,
-                            Review)
+                            Review, User)
 from django.db.models import Avg
+
+
+class UserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=150)
+    email = serializers.CharField(max_length=150)
+
+    class Meta:
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+        model = User
+        read_only_fields = ('role',)
+
+
+class AdminSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=150)
+    email = serializers.CharField(max_length=150)
+
+    class Meta:
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+        model = User
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -49,3 +72,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         read_only_fields = ('author', 'title')
+
+    def validate(self, data):
+        if self.context['request'].method != 'POST':
+            return data
+        title = self.context['view'].kwargs.get('title_id')
+        author = self.context['request'].user
+        if Review.objects.filter(title=title, author=author).exists():
+            raise serializers.ValidationError(
+                'Вы можете оставить только один отзыв.'
+            )
+        return data
