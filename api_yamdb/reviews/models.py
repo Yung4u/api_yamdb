@@ -21,19 +21,19 @@ class User(AbstractUser):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True)
-
-    def __str__(self):
-        return self.name
+    name = models.CharField(max_length=50)
+    slug = models.SlugField(
+        max_length=50,
+        unique=True,
+    )
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True)
-
-    def __str__(self):
-        return self.name
+    name = models.CharField(max_length=50)
+    slug = models.SlugField(
+        max_length=25,
+        unique=True,
+    )
 
 
 class Title(models.Model):

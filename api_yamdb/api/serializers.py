@@ -32,24 +32,39 @@ class AdminSerializer(serializers.ModelSerializer):
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
+        fields = '__all__'
+        read_only_fields = 'slug'
         model = Genre
-        fields = '__all__'
-
-
-class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(required=False)
-
-    class Meta:
-        model = Title
-        fields = '__all__'
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Category
         fields = '__all__'
+        read_only_fields = 'slug'
+        model = Category
+
+
+class TitleGetSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
+
+    class Meta:
+        fields = '__all__'
+        model = Title
+
+
+class TitlePostSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        slug_field='slug', many=True, queryset=Genre.objects.all()
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug', queryset=Category.objects.all()
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Title
 
 
 class CommentSerializer(serializers.ModelSerializer):

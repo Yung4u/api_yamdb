@@ -1,25 +1,21 @@
-from rest_framework import viewsets, status
+from rest_framework import filters, viewsets, mixins, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.db.models import Avg
-from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import User
-from .permissions import IsAdminUser, IsAdminModeratorOrAuthor
-from reviews.models import (Category,
-                            Genre,
-                            Title,
-                            Review)
-
-from api.serializers import (CategorySerializer,
-                             CommentSerializer,
-                             GenreSerializer,
-                             TitleSerializer,
-                             ReviewSerializer,
-                             UserSerializer, AdminSerializer)
+from reviews.models import Title, Genre, Category, User
+from .filters import TitleFilter
+from .permissions import (IsAdminOrReadOnly, IsAdminUser,
+                          IsAdminModeratorOrAuthor)
+from .serializers import (TitleGetSerializer, TitlePostSerializer, 
+                          GenreSerializer, CategorySerializer,
+                          UserSerializer, AdminSerializer,
+                          ReviewSerializer)
 
 
 class UserViewSet(viewsets.ViewSet):
@@ -105,6 +101,42 @@ class SignupViewSet(viewsets.ViewSet):
         return Response(serializer.errors)
 
 
+class GenreViewSet(mixins.CreateModelMixin,
+                   mixins.ListModelMixin,
+                   mixins.DestroyModelMixin,
+                   viewsets.GenericViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = (filters.SearchFilter)
+    read_fields = 'slug'
+    search_fields = ('name',)
+
+
+class CategoryViewSet(mixins.CreateModelMixin,
+                      mixins.ListModelMixin,
+                      mixins.DestroyModelMixin,
+                      viewsets.GenericViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = (filters.SearchFilter)
+    read_fields = 'slug'
+    search_fields = ('name',)
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    permission_classes = [IsAdminOrReadOnly]
+    filter_backends = (DjangoFilterBackend)
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleGetSerializer
+        return TitlePostSerializer
+
+
 class TokenViewSet(viewsets.ViewSet):
     def create(self, request):
         user = get_object_or_404(
@@ -119,16 +151,6 @@ class TokenViewSet(viewsets.ViewSet):
         return Response({
             'detail': 'Confirmation code not valid'
         })
-
-
-class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
-    serializer_class = TitleSerializer
-
-
-class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -159,8 +181,3 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
-
-
-class GenreViewSet(viewsets.ModelViewSet):
-    serializer_class = GenreSerializer
-    queryset = Genre.objects.all()
