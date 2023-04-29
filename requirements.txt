@@ -8,4 +8,3 @@ pytest-pythonpath==0.7.3
 djangorestframework-simplejwt==4.7.2
 Pillow==9.3.0
 django-filter==21.1
-djoser==2.1.0
