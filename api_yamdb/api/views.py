@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db.models import Avg
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import User
 from .permissions import IsAdminUser, IsAdminModeratorOrAuthor
@@ -121,7 +122,7 @@ class TokenViewSet(viewsets.ViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
 
 
