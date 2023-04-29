@@ -15,7 +15,8 @@ from .permissions import (IsAdminOrReadOnly, IsAdminUser,
 from .serializers import (TitleGetSerializer, TitlePostSerializer,
                           GenreSerializer, CategorySerializer,
                           UserSerializer, AdminSerializer,
-                          ReviewSerializer, CommentSerializer)
+                          ReviewSerializer, CommentSerializer,
+                          SignupSerializer)
 
 
 class UserViewSet(viewsets.ViewSet):
@@ -35,8 +36,8 @@ class UserViewSet(viewsets.ViewSet):
         serializer = AdminSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
     def update(self, request, username=None):
         queryset = User.objects.all()
@@ -82,7 +83,7 @@ class UserViewSet(viewsets.ViewSet):
 
 class SignupViewSet(viewsets.ViewSet):
     def create(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             user = get_object_or_404(

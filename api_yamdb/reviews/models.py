@@ -1,5 +1,8 @@
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import (MinValueValidator,
+                                    MaxValueValidator,
+                                    RegexValidator,
+                                    EmailValidator)
 from django.contrib.auth.models import AbstractUser
 from django.db.models import UniqueConstraint
 
@@ -17,8 +20,17 @@ class User(AbstractUser):
         blank=True,
     )
     role = models.CharField(default='user', choices=USER_ROLES, max_length=150)
-    email = models.CharField(max_length=254, blank=False)
-    username = models.CharField(blank=False, max_length=150, unique=True)
+    email = models.EmailField(max_length=254,
+                              blank=False,
+                              validators=[EmailValidator(), ])
+    username = models.CharField(
+        blank=False,
+        max_length=150,
+        unique=True,
+        validators=[RegexValidator(regex=r'^[\w.@+-]+\Z'), ]
+    )
+    first_name = models.CharField(max_length=150, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
 
 
 class Category(models.Model):

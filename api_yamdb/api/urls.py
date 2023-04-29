@@ -23,8 +23,7 @@ router_v1.register(
 
 urlpatterns = [
     path('v1/users/', UserViewSet.as_view({'get': 'list',
-                                           'post': 'create',
-                                           'patch': 'me'})),
+                                           'post': 'create'})),
     path('v1/users/me/', UserViewSet.as_view({'get': 'get_me',
                                              'patch': 'patch_me'})),
     path('v1/users/<str:username>/', UserViewSet.as_view(
