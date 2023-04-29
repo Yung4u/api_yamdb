@@ -10,10 +10,12 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from reviews.models import Title, Genre, Category, User
 from .filters import TitleFilter
-from .permissions import IsAdminOrReadOnly, IsAdminUser
+from .permissions import (IsAdminOrReadOnly, IsAdminUser,
+                          IsAdminModeratorOrAuthor)
 from .serializers import (TitleGetSerializer, TitlePostSerializer, 
                           GenreSerializer, CategorySerializer,
-                          UserSerializer, AdminSerializer)
+                          UserSerializer, AdminSerializer,
+                          ReviewSerializer)
 
 
 class UserViewSet(viewsets.ViewSet):
@@ -99,22 +101,6 @@ class SignupViewSet(viewsets.ViewSet):
         return Response(serializer.errors)
 
 
-class TokenViewSet(viewsets.ViewSet):
-    def create(self, request):
-        user = get_object_or_404(
-            User,
-            username=request.data.get('username'))
-        confirmation_code = request.data.get('confirmation_code')
-        if default_token_generator.check_token(user, confirmation_code):
-            access_token = str(RefreshToken.for_user(user).access_token)
-            return Response({
-                'access': access_token
-            })
-        return Response({
-            'detail': 'Confirmation code not valid'
-        })
-
-
 class GenreViewSet(mixins.CreateModelMixin,
                    mixins.ListModelMixin,
                    mixins.DestroyModelMixin,
@@ -149,3 +135,49 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.request.method == 'GET':
             return TitleGetSerializer
         return TitlePostSerializer
+
+
+class TokenViewSet(viewsets.ViewSet):
+    def create(self, request):
+        user = get_object_or_404(
+            User,
+            username=request.data.get('username'))
+        confirmation_code = request.data.get('confirmation_code')
+        if default_token_generator.check_token(user, confirmation_code):
+            access_token = str(RefreshToken.for_user(user).access_token)
+            return Response({
+                'access': access_token
+            })
+        return Response({
+            'detail': 'Confirmation code not valid'
+        })
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAdminModeratorOrAuthor]
+    serializer_class = ReviewSerializer
+
+    def get_title(self):
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        return title
+
+    def get_queryset(self):
+        return self.get_title().reviews.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, title=self.get_title())
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAdminModeratorOrAuthor]
+    serializer_class = CommentSerializer
+
+    def get_review(self):
+        review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
+        return review
+
+    def get_queryset(self):
+        return self.get_review().comments.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.get_review())

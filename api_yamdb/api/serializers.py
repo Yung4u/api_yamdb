@@ -1,5 +1,9 @@
 from rest_framework import serializers
-from reviews.models import Title, Genre, Category, User
+from reviews.models import (Category,
+                            Comment,
+                            Genre,
+                            Title,
+                            Review, User)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -61,3 +65,32 @@ class TitlePostSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date')
+        read_only_fields = ('author', 'review')
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        read_only_fields = ('author', 'title')
+
+    def validate(self, data):
+        if self.context['request'].method != 'POST':
+            return data
+        title = self.context['view'].kwargs.get('title_id')
+        author = self.context['request'].user
+        if Review.objects.filter(title=title, author=author).exists():
+            raise serializers.ValidationError(
+                'Вы можете оставить только один отзыв.'
+            )
+        return data
