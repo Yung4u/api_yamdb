@@ -32,26 +32,28 @@ class AdminSerializer(serializers.ModelSerializer):
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = '__all__'
-        read_only_fields = ('slug',)
         model = Genre
+        fields = ('name', 'slug', )
+        lookup_field = 'slug'
 
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = '__all__'
-        read_only_fields = ('slug',)
         model = Category
+        fields = ('name', 'slug', )
+        lookup_field = 'slug'
 
 
 class TitleGetSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
-        fields = '__all__'
         model = Title
+        fields = ('id', 'name', 'year', 'rating',
+                  'description', 'genre', 'category', )
 
 
 class TitlePostSerializer(serializers.ModelSerializer):
@@ -63,8 +65,9 @@ class TitlePostSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = '__all__'
         model = Title
+        fields = ('id', 'name', 'year',
+                  'description', 'genre', 'category', )
 
 
 class CommentSerializer(serializers.ModelSerializer):

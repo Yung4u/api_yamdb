@@ -74,9 +74,9 @@ class UserViewSet(viewsets.ViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'create', 'update', 'destroy']:
-            permission_classes = [IsAdminUser]
+            permission_classes = [IsAdminUser, ]
         else:
-            permission_classes = [IsAuthenticated]
+            permission_classes = [IsAuthenticated, ]
         return [permission() for permission in permission_classes]
 
 
@@ -107,10 +107,10 @@ class GenreViewSet(mixins.CreateModelMixin,
                    viewsets.GenericViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [IsAdminOrReadOnly]
-    filter_backends = (filters.SearchFilter)
-    lookup_fields = 'slug'
-    search_fields = ('name',)
+    permission_classes = [IsAdminOrReadOnly, ]
+    filter_backends = [filters.SearchFilter]
+    lookup_field = 'slug'
+    search_fields = ['=name', ]
 
 
 class CategoryViewSet(mixins.CreateModelMixin,
@@ -119,16 +119,16 @@ class CategoryViewSet(mixins.CreateModelMixin,
                       viewsets.GenericViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAdminOrReadOnly]
-    filter_backends = (filters.SearchFilter)
-    lookup_fields = 'slug'
-    search_fields = ('name',)
+    permission_classes = [IsAdminOrReadOnly, ]
+    filter_backends = [filters.SearchFilter]
+    lookup_field = 'slug'
+    search_fields = ['=name', ]
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
-    permission_classes = [IsAdminOrReadOnly]
-    filter_backends = (DjangoFilterBackend)
+    permission_classes = [IsAdminOrReadOnly, ]
+    filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
@@ -154,7 +154,7 @@ class TokenViewSet(viewsets.ViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdminModeratorOrAuthor]
+    permission_classes = [IsAdminModeratorOrAuthor, ]
     serializer_class = ReviewSerializer
 
     def get_title(self):
@@ -169,7 +169,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdminModeratorOrAuthor]
+    permission_classes = [IsAdminModeratorOrAuthor, ]
     serializer_class = CommentSerializer
 
     def get_review(self):
