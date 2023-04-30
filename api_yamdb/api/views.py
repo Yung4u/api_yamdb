@@ -1,6 +1,6 @@
 from rest_framework import filters, viewsets, mixins, status
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters.rest_framework import DjangoFilterBackend
@@ -14,70 +14,17 @@ from .permissions import (IsAdminOrReadOnly, IsAdminUser,
                           IsAdminModeratorOrAuthor)
 from .serializers import (TitleGetSerializer, TitlePostSerializer,
                           GenreSerializer, CategorySerializer,
-                          UserSerializer, AdminSerializer,
-                          ReviewSerializer, CommentSerializer)
+                          UserSerializer, ReviewSerializer,
+                          CommentSerializer, ProfileSerializer)
 
 
-class UserViewSet(viewsets.ViewSet):
-
-    def list(self, request):
-        queryset = User.objects.all()
-        serializer = AdminSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, username=None):
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, username=username)
-        serializer = AdminSerializer(user)
-        return Response(serializer.data)
-
-    def create(self, request):
-        serializer = AdminSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
-
-    def update(self, request, username=None):
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, username=username)
-        serializer = AdminSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
-
-    def destroy(self, request, username=None):
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, username=username)
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=True, methods=['patch'])
-    def patch_me(self, request):
-        user = get_object_or_404(
-            User,
-            username=request.data.get('username'))
-        serializer = UserSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
-
-    @action(detail=True, methods=['patch'])
-    def get_me(self, request):
-        user = get_object_or_404(
-            User,
-            username=request.user.username)
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
-
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'create', 'update', 'destroy']:
-            permission_classes = [IsAdminUser, ]
-        else:
-            permission_classes = [IsAuthenticated, ]
-        return [permission() for permission in permission_classes]
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser, ]
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+    lookup_field = 'username'
 
 
 class SignupViewSet(viewsets.ViewSet):
@@ -97,8 +44,20 @@ class SignupViewSet(viewsets.ViewSet):
                 [email]
             )
 
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=400)
+
+
+@api_view(["GET", "PATCH"])
+@permission_classes([IsAuthenticated, ])
+def get_profile(request):
+    if request.method == "PATCH":
+        serializer = ProfileSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+    serializer = ProfileSerializer(request.user)
+    return Response(serializer.data)
 
 
 class GenreViewSet(mixins.CreateModelMixin,

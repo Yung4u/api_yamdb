@@ -3,7 +3,8 @@ from rest_framework import routers
 from api.views import (CommentViewSet, TitleViewSet,
                        GenreViewSet, CategoryViewSet,
                        ReviewViewSet, UserViewSet,
-                       SignupViewSet, TokenViewSet)
+                       SignupViewSet, TokenViewSet,
+                       get_profile)
 
 
 app_name = 'api'
@@ -19,18 +20,11 @@ router_v1.register(r'titles/(?P<title_id>\d+)/reviews',
 router_v1.register(
     r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
     CommentViewSet, basename='comments')
-
+router_v1.register('users', UserViewSet, basename='users')
 
 urlpatterns = [
-    path('v1/users/', UserViewSet.as_view({'get': 'list',
-                                           'post': 'create',
-                                           'patch': 'me'})),
-    path('v1/users/me/', UserViewSet.as_view({'get': 'get_me',
-                                             'patch': 'patch_me'})),
-    path('v1/users/<str:username>/', UserViewSet.as_view(
-        {'get': 'retrieve',
-         'patch': 'update',
-         'del': 'destroy'})),
+    path('v1/users/me/',
+         get_profile),
     path('v1/auth/signup/',
          SignupViewSet.as_view({'post': 'create'})),
     path('v1/auth/token/',
