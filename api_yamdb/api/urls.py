@@ -3,8 +3,8 @@ from rest_framework import routers
 from api.views import (CommentViewSet, TitleViewSet,
                        GenreViewSet, CategoryViewSet,
                        ReviewViewSet, UserViewSet,
-                       SignupViewSet, TokenViewSet,
-                       get_profile)
+                       signup, TokenViewSet,
+                       get_profile,)
 
 
 app_name = 'api'
@@ -26,7 +26,7 @@ urlpatterns = [
     path('v1/users/me/',
          get_profile),
     path('v1/auth/signup/',
-         SignupViewSet.as_view({'post': 'create'})),
+         signup),
     path('v1/auth/token/',
          TokenViewSet.as_view({'post': 'create'})),
     path('v1/', include(router_v1.urls)),

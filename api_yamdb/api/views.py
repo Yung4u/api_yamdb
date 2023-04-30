@@ -8,6 +8,7 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from reviews.models import Title, Genre, Category, User, Review
 from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAdminUser,
@@ -15,7 +16,8 @@ from .permissions import (IsAdminOrReadOnly, IsAdminUser,
 from .serializers import (TitleGetSerializer, TitlePostSerializer,
                           GenreSerializer, CategorySerializer,
                           UserSerializer, ReviewSerializer,
-                          CommentSerializer, ProfileSerializer)
+                          CommentSerializer, ProfileSerializer,
+                          SignUpSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -27,25 +29,27 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
 
 
-class SignupViewSet(viewsets.ViewSet):
-    def create(self, request):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            user = get_object_or_404(
-                User,
-                username=request.data.get('username'))
-            email = request.data.get('email')
-            token = default_token_generator.make_token(user)
-            send_mail(
-                'Confirmation_code',
-                token,
-                'yamdb@example.com',
-                [email]
-            )
-
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=400)
+@api_view(['POST'])
+def signup(request):
+    serializer = SignUpSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    try:
+        username = serializer.validated_data['username']
+        email = serializer.validated_data['email']
+        user, _ = User.objects.get_or_create(
+            username=username,
+            email=email
+        )
+    except IntegrityError:
+        return Response('все плохо', status=status.HTTP_400_BAD_REQUEST)
+    token = default_token_generator.make_token(user)
+    send_mail(
+        'Confirmation_code',
+        token,
+        'yamdb@example.com',
+        [email]
+    )
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET", "PATCH"])
@@ -55,7 +59,7 @@ def get_profile(request):
         serializer = ProfileSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     serializer = ProfileSerializer(request.user)
     return Response(serializer.data)
 
