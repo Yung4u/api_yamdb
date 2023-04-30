@@ -27,6 +27,7 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
     lookup_field = 'username'
+    http_method_names = ["get", "post", "patch", "delete"]
 
 
 @api_view(['POST'])
