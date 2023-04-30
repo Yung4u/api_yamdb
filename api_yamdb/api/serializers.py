@@ -1,4 +1,4 @@
-from rest_framework import serializers, validators
+from rest_framework import serializers
 from reviews.models import (Category,
                             Comment,
                             Genre,
@@ -16,16 +16,23 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.Serializer):
-    email = serializers.EmailField(
-        validators=[validators.UniqueValidator(queryset=User.objects.all())],
-        max_length=254)
+    email = serializers.EmailField(max_length=254)
     username = serializers.RegexField(regex=r'^[\w.@+-]+\Z',
                                       required=True, max_length=150)
 
     def validate_username(self, value):
-        if value.lower() == 'me':
+        if (
+            value.lower() == 'me'
+        ):
             raise serializers.ValidationError(
-                'Нельзя указывать имя me в качестве имени')
+                'Нельзя указывать me в качестве имени')
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            user = User.objects.get(email=value)
+            if user.username != self.initial_data.get('username'):
+                raise serializers.ValidationError()
         return value
 
 
