@@ -7,16 +7,26 @@ from reviews.models import (Category,
 
 
 class UserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(
-        required=True,
-        validators=[validators.UniqueValidator(queryset=User.objects.all())]
-    )
 
     class Meta:
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
         model = User
+
+
+class SignUpSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        validators=[validators.UniqueValidator(queryset=User.objects.all())],
+        max_length=254)
+    username = serializers.RegexField(regex=r'^[\w.@+-]+\Z',
+                                      required=True, max_length=150)
+
+    def validate_username(self, value):
+        if value.lower() == 'me':
+            raise serializers.ValidationError(
+                'Нельзя указывать имя me в качестве имени')
+        return value
 
 
 class ProfileSerializer(serializers.ModelSerializer):
