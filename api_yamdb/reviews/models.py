@@ -59,6 +59,19 @@ class Title(models.Model):
         return self.name
 
 
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        verbose_name='Жанр'
+    )
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='Произведение'
+    )
+
+
 class Review(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews')
