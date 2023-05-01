@@ -50,7 +50,8 @@ class SignUpSerializer(serializers.Serializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(
-        regex=r'^[\w.@+-]+\Z', max_length=150,)
+        regex=r'^[\w.@+-]+\Z', max_length=150, required=False)
+    email = serializers.EmailField(max_length=254, required=False)
 
     class Meta:
         model = User
