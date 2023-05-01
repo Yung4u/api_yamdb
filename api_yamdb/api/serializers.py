@@ -4,15 +4,27 @@ from reviews.models import (Category,
                             Genre,
                             Title,
                             Review, User)
+from rest_framework.exceptions import NotFound
+from rest_framework.validators import UniqueValidator
 
 
 class UserSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+\Z', max_length=150,
+        validators=[UniqueValidator(queryset=User.objects.all())])
 
     class Meta:
         fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+            "username", "email", "first_name", "last_name", "bio", "role"
         )
         model = User
+
+    def validate_email(self, attrs):
+        if attrs == self.context["request"].user:
+            raise serializers.ValidationError(
+                "Такой email уже зарегистрирован!"
+            )
+        return attrs
 
 
 class SignUpSerializer(serializers.Serializer):
@@ -37,13 +49,15 @@ class SignUpSerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(
+        regex=r'^[\w.@+-]+\Z', max_length=150,)
 
     class Meta:
-        fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
-        )
         model = User
-        read_only_fields = ('username', 'email', 'role')
+        fields = (
+            "username", "email", "first_name", "last_name", "bio", "role",
+        )
+        read_only_fields = ("username", "email", "role",)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -113,4 +127,16 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Вы можете оставить только один отзыв.'
             )
+        return data
+
+
+class TokenSerializer(serializers.Serializer):
+
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(required=True)
+
+    def validate(self, data):
+        username = data.get('username')
+        if not User.objects.filter(username=username).exists():
+            raise NotFound("Данный пользователь не зарегистрирован")
         return data
