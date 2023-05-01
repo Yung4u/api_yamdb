@@ -1,8 +1,8 @@
 from rest_framework import filters, viewsets, mixins, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
@@ -17,7 +17,7 @@ from .serializers import (TitleGetSerializer, TitlePostSerializer,
                           GenreSerializer, CategorySerializer,
                           UserSerializer, ReviewSerializer,
                           CommentSerializer, ProfileSerializer,
-                          SignUpSerializer)
+                          SignUpSerializer, TokenSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -57,7 +57,7 @@ def signup(request):
 @permission_classes([IsAuthenticated, ])
 def get_profile(request):
     if request.method == "PATCH":
-        serializer = ProfileSerializer(data=request.data)
+        serializer = ProfileSerializer(request.user, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -101,20 +101,20 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitlePostSerializer
 
 
-class TokenViewSet(viewsets.ViewSet):
-    def create(self, request):
-        user = get_object_or_404(
-            User,
-            username=request.data.get('username'))
-        confirmation_code = request.data.get('confirmation_code')
-        if default_token_generator.check_token(user, confirmation_code):
-            access_token = str(RefreshToken.for_user(user).access_token)
-            return Response({
-                'access': access_token
-            })
-        return Response({
-            'detail': 'Confirmation code not valid'
-        })
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def get_token(request):
+    serializer = TokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data.get('username')
+    confirmation_code = serializer.validated_data.get('confirmation_code')
+    user = get_object_or_404(User, username=username)
+    if default_token_generator.check_token(user, confirmation_code):
+        token = str(AccessToken.for_user(user))
+        return Response({'token': token},
+                        status=status.HTTP_200_OK)
+    return Response({'confirmation_code': "Код подтверждения неверен"},
+                    status=status.HTTP_400_BAD_REQUEST)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
