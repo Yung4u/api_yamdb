@@ -114,6 +114,6 @@ python manage.py runserver
 =======
 ### Авторы:
 
-[Мыльников Александр](https://github.com/aksdr53)
-[Ядранский Максимилиан](https://github.com/polovatel)
-[Орлов Сергей](https://github.com/Yung4u)
+- [Мыльников Александр](https://github.com/aksdr53)
+- [Ядранский Максимилиан](https://github.com/polovatel)
+- [Орлов Сергей](https://github.com/Yung4u)
