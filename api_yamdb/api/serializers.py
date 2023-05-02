@@ -1,65 +1,10 @@
 from datetime import datetime
 
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound
-from rest_framework.validators import UniqueValidator
 
 from reviews.models import (Category, Comment,
                             Genre, Title,
-                            Review, User)
-
-
-class UserSerializer(serializers.ModelSerializer):
-    username = serializers.RegexField(
-        regex=r'^[\w.@+-]+\Z', max_length=150,
-        validators=[UniqueValidator(queryset=User.objects.all())])
-
-    class Meta:
-        fields = (
-            "username", "email", "first_name", "last_name", "bio", "role"
-        )
-        model = User
-
-    def validate_email(self, attrs):
-        if attrs == self.context["request"].user:
-            raise serializers.ValidationError(
-                "Такой email уже зарегистрирован!"
-            )
-        return attrs
-
-
-class SignUpSerializer(serializers.Serializer):
-    email = serializers.EmailField(max_length=254)
-    username = serializers.RegexField(regex=r'^[\w.@+-]+\Z',
-                                      required=True, max_length=150)
-
-    def validate_username(self, value):
-        if (
-            value.lower() == 'me'
-        ):
-            raise serializers.ValidationError(
-                'Нельзя указывать me в качестве имени')
-        return value
-
-    def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            user = User.objects.get(email=value)
-            if user.username != self.initial_data.get('username'):
-                raise serializers.ValidationError()
-        return value
-
-
-class ProfileSerializer(serializers.ModelSerializer):
-    username = serializers.RegexField(
-        regex=r'^[\w.@+-]+\Z', max_length=150, required=False)
-    email = serializers.EmailField(max_length=254, required=False)
-
-    class Meta:
-        model = User
-        fields = (
-            "username", "email", "first_name", "last_name", "bio", "role",
-        )
-        read_only_fields = ("username", "email", "role",)
+                            Review)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -136,16 +81,4 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Вы можете оставить только один отзыв.'
             )
-        return data
-
-
-class TokenSerializer(serializers.Serializer):
-
-    username = serializers.CharField(required=True)
-    confirmation_code = serializers.CharField(required=True)
-
-    def validate(self, data):
-        username = data.get('username')
-        if not User.objects.filter(username=username).exists():
-            raise NotFound("Данный пользователь не зарегистрирован")
         return data
