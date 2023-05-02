@@ -1,9 +1,10 @@
 from django.urls import include, path
 from rest_framework import routers
+
 from api.views import (CommentViewSet, TitleViewSet,
                        GenreViewSet, CategoryViewSet,
-                       ReviewViewSet, UserViewSet,
-                       signup, get_profile, get_token)
+                       ReviewViewSet)
+from users.views import UserViewSet, signup, get_token
 
 
 app_name = 'api'
@@ -19,11 +20,9 @@ router_v1.register(r'titles/(?P<title_id>\d+)/reviews',
 router_v1.register(
     r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
     CommentViewSet, basename='comments')
-router_v1.register('users', UserViewSet, basename='users')
+router_v1.register(r'users', UserViewSet, basename='users')
 
 urlpatterns = [
-    path('v1/users/me/',
-         get_profile),
     path('v1/auth/signup/',
          signup),
     path('v1/auth/token/',
