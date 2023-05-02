@@ -1,11 +1,12 @@
+from datetime import datetime
+
 from rest_framework import serializers
-from reviews.models import (Category,
-                            Comment,
-                            Genre,
-                            Title,
-                            Review, User)
 from rest_framework.exceptions import NotFound
 from rest_framework.validators import UniqueValidator
+
+from reviews.models import (Category, Comment,
+                            Genre, Title,
+                            Review, User)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -100,6 +101,13 @@ class TitlePostSerializer(serializers.ModelSerializer):
         model = Title
         fields = ('id', 'name', 'year',
                   'description', 'genre', 'category', )
+
+    def validate_year(self, data):
+        if data >= datetime.now().year:
+            raise serializers.ValidationError(
+                'Укажите правильный год',
+            )
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
