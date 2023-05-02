@@ -9,7 +9,9 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
+
 from reviews.models import Title, Genre, Category, User, Review
+from .mixins import CreateListDestroyViewSet
 from .filters import TitleFilter
 from .permissions import (IsAdminOrReadOnly, IsAdminUser,
                           IsAdminModeratorOrAuthor)
@@ -65,28 +67,14 @@ def get_profile(request):
     return Response(serializer.data)
 
 
-class GenreViewSet(mixins.CreateModelMixin,
-                   mixins.ListModelMixin,
-                   mixins.DestroyModelMixin,
-                   viewsets.GenericViewSet):
+class GenreViewSet(CreateListDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [IsAdminOrReadOnly, ]
-    filter_backends = [filters.SearchFilter]
-    lookup_field = 'slug'
-    search_fields = ['=name', ]
 
 
-class CategoryViewSet(mixins.CreateModelMixin,
-                      mixins.ListModelMixin,
-                      mixins.DestroyModelMixin,
-                      viewsets.GenericViewSet):
+class CategoryViewSet(CreateListDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAdminOrReadOnly, ]
-    filter_backends = [filters.SearchFilter]
-    lookup_field = 'slug'
-    search_fields = ['=name', ]
 
 
 class TitleViewSet(viewsets.ModelViewSet):

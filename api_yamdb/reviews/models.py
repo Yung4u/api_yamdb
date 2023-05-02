@@ -3,6 +3,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db.models import UniqueConstraint
 
+from .validators import validate_year
+
 
 USER_ROLES = (
     ('user', 'Пользователь'),
@@ -23,26 +25,42 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=150, blank=True)
 
 
-class Category(models.Model):
+class CategoryGenre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(
         max_length=50,
         unique=True,
     )
 
+    class Meta:
+        abstract = True
+        ordering = ('name', )
 
-class Genre(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(
-        max_length=50,
-        unique=True,
-    )
+    def __str__(self):
+        return self.name[:30]
+
+
+class Category(CategoryGenre):
+
+    class Meta(CategoryGenre.Meta):
+        verbose_name = 'Категория'
+        default_related_name = 'categories'
+
+
+class Genre(CategoryGenre):
+
+    class Meta(CategoryGenre.Meta):
+        verbose_name = 'Жанр'
+        default_related_name = 'genres'
 
 
 class Title(models.Model):
     name = models.CharField(max_length=256,
                             verbose_name='Имя',)
-    year = models.IntegerField(verbose_name='Год')
+    year = models.PositiveSmallIntegerField(
+        verbose_name='Год выпуска',
+        validators=(validate_year, ),
+    )
     description = models.TextField(blank=True,
                                    verbose_name='Описание')
     genre = models.ManyToManyField(Genre,
@@ -54,6 +72,10 @@ class Title(models.Model):
         related_name='categories',
         verbose_name='Категория',
     )
+
+    class Meta:
+        verbose_name = 'Произведение'
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
@@ -70,6 +92,14 @@ class GenreTitle(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Произведение'
     )
+
+    class Meta:
+        verbose_name = 'Жанр_Произведение'
+        default_related_name = 'genres_titles'
+
+    def __str__(self):
+        return (f'Ключ книги {self.title},'
+                f'ключ жанра {self.genre}')
 
 
 class Review(models.Model):
