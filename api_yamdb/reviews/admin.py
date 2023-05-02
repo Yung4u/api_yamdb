@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import (User, Review, Title,
+from .models import (Review, Title,
                      Comment, Genre, Category)
 
 
@@ -24,7 +24,6 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ('pk', 'author', 'review', 'text', 'pub_date')
 
 
-admin.site.register(User)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Genre, GenreAdmin)
 admin.site.register(Title, TitleAdmin)
