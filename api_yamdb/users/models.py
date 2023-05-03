@@ -1,10 +1,18 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from .constants import (ADMIN, MODERATOR, USER,
-                        ROLE, MAX_LENGTH,
-                        EMAIL_MAX_LENGTH,
-                        ROLE_MAX_LENGTH)
+from api_yamdb.settings import (MAX_LENGTH,
+                                EMAIL_MAX_LENGTH)
+
+
+ADMIN = "admin"
+MODERATOR = "moderator"
+USER = "user"
+ROLE = [
+    (ADMIN, "Администратор"),
+    (MODERATOR, "Модератор"),
+    (USER, "Пользователь")
+]
 
 
 class User(AbstractUser):
@@ -13,7 +21,9 @@ class User(AbstractUser):
         blank=True,
     )
     role = models.CharField(default=USER,
-                            choices=ROLE, max_length=ROLE_MAX_LENGTH)
+                            choices=ROLE,
+                            max_length=len(max(map(lambda x: x[0], ROLE),
+                                               key=len)))
     email = models.EmailField(max_length=EMAIL_MAX_LENGTH,
                               blank=False, unique=True)
     username = models.CharField(blank=False,
