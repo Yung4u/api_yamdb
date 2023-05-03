@@ -3,8 +3,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import UniqueConstraint
 
 from users.models import User
-from reviews.constants import (SLUG_MAX_LENGTH, NAME_MAX_LENGTH,
-                               CHARACTERS_ON_TEXT)
+from api_yamdb.settings import (SLUG_MAX_LENGTH, NAME_MAX_LENGTH,
+                                CHARACTERS_ON_TEXT)
 from reviews.validators import validate_year
 
 

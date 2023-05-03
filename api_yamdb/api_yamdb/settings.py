@@ -132,3 +132,13 @@ SIMPLE_JWT = {
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+CHARACTERS_ON_TEXT = 30
+
+NAME_MAX_LENGTH = 256
+
+SLUG_MAX_LENGTH = 50
+
+EMAIL_MAX_LENGTH = 254
+
+MAX_LENGTH = 150
